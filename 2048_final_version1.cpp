@@ -26,12 +26,14 @@ void move_up();
 void move_down();
 std::string str(int no);
 std::string num(int g);
+int high_score();
 //-----------------------------------------------------------------------------
 
 
 //Declaring variables with global scope:
 //-----------------------------------------------------------------------------
 std::vector<int> numbers = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int score = 0;
 //-----------------------------------------------------------------------------
 
 
@@ -40,7 +42,14 @@ std::vector<int> numbers = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 int main(){
     
     //Needed for Windows to output wide Unicode characters:
-    SetConsoleOutputCP(65001); 
+    SetConsoleOutputCP(65001);
+
+    //Needed for ANSI Escape sequence to work in Windows 10 cmd:
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD consoleMode;
+    GetConsoleMode(console, &consoleMode);
+    consoleMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(console, consoleMode);
     
     std::cout << "\n";
     std::cout << std::string( 25, ' ' ) << "██████╗░░█████╗░░░██╗██╗░█████╗░\n";
@@ -49,20 +58,13 @@ int main(){
     std::cout << std::string( 25, ' ' ) << "██╔══╝░░██║░░██║███████║██╔══██╗\n";
     std::cout << std::string( 25, ' ' ) << "███████╗╚█████╔╝╚════██║╚█████╔╝\n";
     std::cout << std::string( 25, ' ' ) << "╚══════╝░╚════╝░░░░░░╚═╝░╚════╝░\n\n";
-    std::cout << std::string( 10, ' ' ) <<  "Use the arrow keys (🠈 🠊 🠉 🠋) on your keyboard to move the tiles\n";
-    std::cout << std::string( 10, ' ' ) <<  "When two tiles with the same number touch, they merge into one!\n";
-    std::cout << std::string( 10, ' ' ) <<  " All tiles move as far as possible, some move more than others\n";
-    std::cout << std::string( 10, ' ' ) <<  "   A new tile is spawned at the end of each turn, randomly\n";
-    std::cout << std::string( 10, ' ' ) <<  "                          Have fun!\n";
+    std::cout << std::string( 10, ' ' ) << "Use the arrow keys (← → ↑ ↓) on your keyboard to move the tiles\n";
+    std::cout << std::string( 10, ' ' ) << "When two tiles with the same number touch, they merge into one!\n";
+    std::cout << std::string( 10, ' ' ) << " All tiles move as far as possible, some move more than others\n";
+    std::cout << std::string( 10, ' ' ) << "   A new tile is spawned at the end of each turn, randomly\n";
+    std::cout << std::string( 10, ' ' ) << "                          Have fun!\n";
 
-    random();
-    random();
-    random();
-    random();
-    board();
-    timer(0.5);
-    random();
-    board();
+    random();random();random();random();board();timer(0.2);random();board();
     
     int u = 1;
     int c = 0;
@@ -72,30 +74,32 @@ int main(){
         switch((c=getch())){
         case KEY_UP:
             move_up();
-            timer(0.5);
+            timer(0.2);
             random();
             board();
             break;
         case KEY_DOWN:
             move_down();
-            timer(0.5);
+            timer(0.2);
             random();
             board();
             break;
         case KEY_LEFT:
             move_left();
-            timer(0.5);
+            timer(0.2);
             random();
             board();
             break;
         case KEY_RIGHT:
             move_right();
-            timer(0.5);
+            timer(0.2);
             random();
             board();
             break;
         case KEY_SPACE:
-            std::cout << std::string (11, '\n');
+            std::cout << std::string (13, '\n');
+            std::cout << std::string (33, ' ' ) << ">> You quit! <<\n\n";
+            timer(1);
             u--;
             break;
         default:
@@ -137,8 +141,10 @@ std::cout << std::string( 30, ' ' ); printf("╟────┼────┼�
 std::cout << std::string( 30, ' ' ) << "║" << num(8) << "│" << num(9) << "│" << num(10) << "│" << num(11) << "║" <<"\n";
 std::cout << std::string( 30, ' ' ); printf("╟────┼────┼────┼────╢\n");
 std::cout << std::string( 30, ' ' ) << "║" << num(12) << "│" << num(13) << "│" << num(14) << "│" << num(15) << "║" <<"\n";
-std::cout << std::string( 30, ' ' ); printf("╚════╧════╧════╧════╝\n");
-printf("\033[10F");}
+std::cout << std::string( 30, ' ' ); printf("╚════╧════╧════╧════╝\n\n");
+std::cout << std::string( 30, ' ' ) << "Press 'space' to quit\n\n";
+std::cout << std::string( 36, ' ' ) << "Score: " << score << "\n";
+std::cout << "\x1b[14A";}
 //-----------------------------------------------------------------------------
 
 
@@ -161,7 +167,8 @@ void move_right(){
                     else if ( numbers[z-1] != 0 && numbers[z]==numbers[z-1] ){
                         numbers[z] = numbers[z-1]*2;
                         numbers[z-1] = 0;}}}
-            timer(0.5);
+            timer(0.2);
+            high_score();
             board();}}}
 //-----------------------------------------------------------------------------
 
@@ -185,7 +192,8 @@ void move_left(){
                     else if ( numbers[z+1] != 0 && numbers[z+1] == numbers[z] ){
                         numbers[z] = numbers[z+1]*2;
                         numbers[z+1] = 0;}}}
-            timer(0.5);
+            timer(0.2);
+            high_score();
             board();}}}
 //-----------------------------------------------------------------------------
 
@@ -209,7 +217,8 @@ void move_up(){
                         else if ( numbers[z+4] != 0 && numbers[z+4] == numbers[z] ){
                             numbers[z] = numbers[z+4]*2;
                             numbers[z+4] = 0;}}}
-                timer(0.5);
+                timer(0.2);
+                high_score();
                 board();}}}}
 //-----------------------------------------------------------------------------
 
@@ -233,7 +242,8 @@ void move_down(){
                         else if ( numbers[z-4] != 0 && numbers[z-4] == numbers[z] ){
                             numbers[z] = numbers[z-4] * 2;
                             numbers[z-4] = 0;}}}
-                timer(0.5);
+                timer(0.2);
+                high_score();
                 board();}}}}
 //-----------------------------------------------------------------------------
 
@@ -256,4 +266,14 @@ void random(){
     }
     while (numbers[new_index] != 0);
     numbers[new_index] = new_number;}
+//-----------------------------------------------------------------------------
+
+
+//Checks highest number in vector and returns it as score
+//-----------------------------------------------------------------------------
+int high_score(){
+    for (int i = 1; i <= numbers.size()-1; i++){
+        if (numbers[i] >= numbers[i-1] && numbers[i] > score){score = numbers[i];}   
+        else if (numbers[i-1] >= numbers[i] && numbers[i-1] > score){score = numbers[i-1];}}
+    return score;}
 //-----------------------------------------------------------------------------
